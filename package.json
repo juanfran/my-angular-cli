@@ -2,9 +2,13 @@
   "name": "my-angular-cli",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index",
+  "types": "lib/index",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run build:live",
+    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -15,5 +19,14 @@
   "bugs": {
     "url": "https://github.com/juanfran/my-angular-cli/issues"
   },
-  "homepage": "https://github.com/juanfran/my-angular-cli#readme"
+  "compilerOptions": {
+    "typeRoots": ["node_modules/@types"]
+  },
+  "homepage": "https://github.com/juanfran/my-angular-cli#readme",
+  "devDependencies": {
+    "@types/node": "^8.0.18",
+    "nodemon": "^1.11.0",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.4.2"
+  }
 }
