@@ -1,0 +1,19 @@
+{
+  "name": "my-angular-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juanfran/my-angular-cli.git"
+  },
+  "author": "Juanfran Alcántara",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/juanfran/my-angular-cli/issues"
+  },
+  "homepage": "https://github.com/juanfran/my-angular-cli#readme"
+}
