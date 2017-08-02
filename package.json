@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build:live",
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "tslint src/**/*.ts --type-check"
   },
   "repository": {
     "type": "git",
@@ -20,12 +21,15 @@
     "url": "https://github.com/juanfran/my-angular-cli/issues"
   },
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": [
+      "node_modules/@types"
+    ]
   },
   "homepage": "https://github.com/juanfran/my-angular-cli#readme",
   "devDependencies": {
     "@types/node": "^8.0.18",
     "nodemon": "^1.11.0",
+    "ts-lint": "^4.5.1",
     "ts-node": "^3.3.0",
     "typescript": "^2.4.2"
   }

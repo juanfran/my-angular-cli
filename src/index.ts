@@ -1,9 +1,7 @@
-interface HelloWorld {
-    msg: string
+interface IHelloWorld {
+    msg: string;
 };
 
-const hello: HelloWorld = {
- msg: "Hello world"
+const hello: IHelloWorld = {
+ msg: "Hello world",
 };
-
-console.log(hello.msg);
