@@ -1,7 +1,3 @@
-export interface IHelloWorld {
-    msg: string;
-};
+import { bluePrintManager } from './blueprint';
 
-export const hello: IHelloWorld = {
- msg: "Hello world",
-};
+bluePrintManager();

@@ -28,6 +28,7 @@
   "homepage": "https://github.com/juanfran/my-angular-cli#readme",
   "devDependencies": {
     "@types/chai": "^4.0.2",
+    "@types/lodash": "^4.14.71",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.18",
     "chai": "^4.1.0",
@@ -36,5 +37,8 @@
     "ts-lint": "^4.5.1",
     "ts-node": "^3.3.0",
     "typescript": "^2.4.2"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
   }
 }
