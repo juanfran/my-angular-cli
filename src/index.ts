@@ -1,7 +1,7 @@
-interface IHelloWorld {
+export interface IHelloWorld {
     msg: string;
 };
 
-const hello: IHelloWorld = {
+export const hello: IHelloWorld = {
  msg: "Hello world",
 };

@@ -5,7 +5,7 @@
   "main": "lib/index",
   "types": "lib/index",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "start": "npm run build:live",
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
     "build": "tsc",
@@ -27,7 +27,11 @@
   },
   "homepage": "https://github.com/juanfran/my-angular-cli#readme",
   "devDependencies": {
+    "@types/chai": "^4.0.2",
+    "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.18",
+    "chai": "^4.1.0",
+    "mocha": "^3.5.0",
     "nodemon": "^1.11.0",
     "ts-lint": "^4.5.1",
     "ts-node": "^3.3.0",
