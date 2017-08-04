@@ -7,7 +7,7 @@ export const component = {
             {
                 path: path.join('<%= root %>', '<%= name %>', '<%= name %>.component.ts'),
                 text: `
-                    class <%= name %>Component {
+                    class <%= utils.capitalize(name) %>Component {
 
                     }
                 `
