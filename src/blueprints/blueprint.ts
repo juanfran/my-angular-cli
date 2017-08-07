@@ -2,10 +2,21 @@ import * as writeFile from 'write';
 
 import * as _ from 'lodash';
 
+export interface File {
+  path: string;
+  text: string;
+}
+
+export type Files = () => File[];
+
+export interface BlueprintConfig {
+  files: Files
+}
+
 export class Blueprint {
   public compiledFiles: any[] = [];
 
-  constructor(private blueprintConfig: any, private context: any) {}
+  constructor(private blueprintConfig: BlueprintConfig, private context: object) {}
 
   public compileFiles() {
     const context = {
