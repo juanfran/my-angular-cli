@@ -8,7 +8,7 @@ const exampleBlueprint = {
       {
         path: '<%= root %>/<%= name %>/<%= name %>.component.ts',
         text: `
-          - <%= root %>        
+          - <%= root %>
           - <%= utils.capitalize(name) %>
           - <%= utils.camelCase(name) %>
           - <%= utils.escape(name) %>

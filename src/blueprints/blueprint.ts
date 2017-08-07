@@ -16,24 +16,24 @@ export interface BlueprintConfig {
 export class Blueprint {
   public compiledFiles: any[] = [];
 
-  constructor(private blueprintConfig: BlueprintConfig, private context: object) {}
+  constructor(private blueprintConfig: BlueprintConfig, private context: object) { }
 
   public compileFiles() {
     const context = {
       ...this.context,
       utils: {
-          capitalize: _.capitalize,
-          camelCase: _.camelCase,
-          escape: _.escape,
-          kebabCase: _.kebabCase,
-          lowerCase: _.lowerCase
+        capitalize: _.capitalize,
+        camelCase: _.camelCase,
+        escape: _.escape,
+        kebabCase: _.kebabCase,
+        lowerCase: _.lowerCase
       }
     };
 
     for (let file of this.blueprintConfig.files()) {
       let compiledFile = {
-          path: _.template(file.path)(context),
-          text: _.template(file.text)(context)
+        path: _.template(file.path)(context),
+        text: _.template(file.text)(context)
       }
 
       this.compiledFiles.push(compiledFile);
@@ -48,7 +48,7 @@ export class Blueprint {
         if (err) {
           return console.error(err);
         }
-      });        
+      });
     });
   }
 }
