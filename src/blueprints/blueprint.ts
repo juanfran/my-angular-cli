@@ -1,9 +1,8 @@
 import * as writeFile from 'write';
 
-import { component } from './blueprints/component.blueprint';
 import * as _ from 'lodash';
 
-class Blueprint {
+export class Blueprint {
   public compiledFiles: any[] = [];
 
   constructor(private blueprintConfig: any, private context: any) {}
@@ -28,28 +27,17 @@ class Blueprint {
 
       this.compiledFiles.push(compiledFile);
     }
+
+    return this.compiledFiles;
   }
 
   public save() {
-    console.log(this.compiledFiles);
     this.compiledFiles.forEach((file) => {
-    writeFile(file.path, file.text, function (err) {
+      writeFile(file.path, file.text, function (err) {
         if (err) {
           return console.error(err);
         }
       });        
     });
   }
-}
-
-const blueprintComponent = new Blueprint(component, {
-  root: 'src/module1',
-  name: 'hello'
-});
-
-blueprintComponent.compileFiles();
-blueprintComponent.save();
-
-export function bluePrintManager() {
-  console.log(blueprintComponent.compiledFiles);
 }

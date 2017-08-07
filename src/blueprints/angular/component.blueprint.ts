@@ -1,7 +1,7 @@
 
 import * as path from 'path';
 
-export const component = {
+export default {
     files() {
         return [
             {
