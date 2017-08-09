@@ -1,7 +1,16 @@
 
 import * as path from 'path';
 
+import * as INPUT from '../../inputs';
+
 export default {
+  params() {
+    return {
+      root: ['', INPUT.REQUIRED],
+      name: ['', INPUT.REQUIRED],
+      inlineTemplate: [false, INPUT.OPTIONAL]
+    };
+  },
   files() {
     return [
       {

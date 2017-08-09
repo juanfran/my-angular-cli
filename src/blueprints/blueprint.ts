@@ -1,4 +1,5 @@
 import * as writeFile from 'write';
+import * as INPUT from '../inputs';
 
 import * as _ from 'lodash';
 
