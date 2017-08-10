@@ -8,12 +8,6 @@ export interface File {
   text: string;
 }
 
-export type Files = () => File[];
-
-export interface BlueprintConfig {
-  files: Files
-}
-
 export class Blueprint {
   public compiledFiles: any[] = [];
 
@@ -52,4 +46,10 @@ export class Blueprint {
       });
     });
   }
+}
+
+export interface BlueprintConfig {
+  context?: any,
+  params?: any;
+  files: () => File[]
 }
