@@ -16,8 +16,6 @@ export class componentBluePrint implements BlueprintConfig {
   files() {
     const files:File[] = [];
 
-    let template = 'templateUrl: \'<%= name %>.component.html\',';
-
     if (!this.context.inlineTemplate) {
       files.push({
         path: path.join('<%= root %>', '<%= name %>', '<%= name %>.component.html'),
@@ -25,8 +23,6 @@ export class componentBluePrint implements BlueprintConfig {
           <%= utils.capitalize(name) %> Template
         `
       });
-
-      template = 'template: `<%= utils.capitalize(name) %> Template`';
     }
 
     files.push({
@@ -34,7 +30,11 @@ export class componentBluePrint implements BlueprintConfig {
       text: `
         @Component({
           selector: 'dashboard-page-item',
-          ${template}
+          <% if (inlineTemplate) { %>
+            templateUrl: '<%= name %>.component.html',
+          <% } else { %>
+            template: \`<%= utils.capitalize(name) %> Template\`
+          <% } %>
           styleUrls: ['dashboard-page-item.component.css'],
           changeDetection: ChangeDetectionStrategy.OnPush
         })
