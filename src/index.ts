@@ -8,8 +8,9 @@ const config = new ComponentBluePrint();
 config.context = {
   root: 'src',
   name: 'hello',
-  inlineTemplate: false,
-  onPush: false
+  inlineTemplate: true,
+  inlineStyles: true,
+  onPush: true
 };
 
 const blueprintComponent = new Blueprint(config);

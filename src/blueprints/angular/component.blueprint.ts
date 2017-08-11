@@ -35,16 +35,23 @@ export class ComponentBluePrint implements BlueprintConfig {
       });
     }
 
+    if (!this.context.inlineStyles) {
+      files.push({
+        path: path.join('<%= root %>', '<%= name %>', '<%= name %>.component.css'),
+        text: `
+:host {}
+        `
+      });
+    }
+
     files.push({
       path: path.join('<%= root %>', '<%= name %>', '<%= name %>.component.ts'),
-      text: `import {<% _.forEach(dependencies, function(dependency) { %>
-  <%- dependency %>,
-<% }); %>} from '@angular/core';
+      text: `import { <%= dependencies.join(', ') %> } from '@angular/core';
 
 export @Component({
-  selector: 'dashboard-page-item',
-  <% if (inlineTemplate) { %>templateUrl: '<%= name %>.component.html',<% } else { %>template: \`<%= utils.capitalize(name) %> Template\`<% } %>
-  styleUrls: ['dashboard-page-item.component.css'],
+  selector: '<%= name %>',
+  <% if (!inlineTemplate) { %>templateUrl: '<%= name %>.component.html',<% } else { %>template: \`<%= utils.capitalize(name) %> Template\`<% } %>
+  <% if (!inlineStyles) { %>styleUrls: ['<%= name %>.component.css'],<% } else { %>styles: ['']<% } %>
   <% if (onPush) { %>changeDetection: ChangeDetectionStrategy.OnPush<% } %>
 })
 class <%= utils.capitalize(name) %>Component {}
