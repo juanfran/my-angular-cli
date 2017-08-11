@@ -1,8 +1,15 @@
-import { expect } from 'chai';
+import * as chai from 'chai';
+import * as sinon from 'sinon';
+import * as sinonChai from 'sinon-chai'
+
+const expect = chai.expect;
+chai.use(sinonChai);
 
 import { Blueprint } from './blueprint';
 
-const exampleBlueprint = {
+class exampleBlueprint {
+  context: {}
+  preCompile() {}
   files() {
     return [
       {
@@ -18,21 +25,23 @@ const exampleBlueprint = {
       }
     ];
   }
-};
+}
 
 describe('Blueprint', () => {
   it('compile themes', () => {
-    const blueprintComponent = new Blueprint(exampleBlueprint, {
+    const config = new exampleBlueprint();
+    config.context = {
       root: 'src',
       name: 'hello'
-    });
+    }
+
+    config.preCompile = sinon.stub();
+    const blueprintComponent = new Blueprint(<any> config);
 
     const compiledFiles = blueprintComponent.compileFiles();
 
-    console.log(blueprintComponent.compiledFiles);
-
+    expect(config.preCompile).have.been.called;
     expect(blueprintComponent.compiledFiles[0].path).to.be.equal('src/hello/hello.component.ts');
     expect(blueprintComponent.compiledFiles[0].text).to.contains('hello');
-
   });
 });

@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as INPUT from '../../inputs';
 import { File, BlueprintConfig } from '../blueprint';
 
-export class componentBluePrint implements BlueprintConfig {
+export class ComponentBluePrint implements BlueprintConfig {
   context:any = {}
   params() {
     return {
@@ -13,6 +13,16 @@ export class componentBluePrint implements BlueprintConfig {
       inlineTemplate: [false, INPUT.OPTIONAL]
     };
   }
+  preCompile() {
+    const dependencies = [
+      'Component'
+    ];
+
+    if (this.context.onPush) {
+      dependencies.push('ChangeDetectionStrategy');
+    }
+    this.context.dependencies = dependencies;
+  }
   files() {
     const files:File[] = [];
 
@@ -20,25 +30,24 @@ export class componentBluePrint implements BlueprintConfig {
       files.push({
         path: path.join('<%= root %>', '<%= name %>', '<%= name %>.component.html'),
         text: `
-          <%= utils.capitalize(name) %> Template
+<%= utils.capitalize(name) %> Template
         `
       });
     }
 
     files.push({
       path: path.join('<%= root %>', '<%= name %>', '<%= name %>.component.ts'),
-      text: `
-        @Component({
-          selector: 'dashboard-page-item',
-          <% if (inlineTemplate) { %>
-            templateUrl: '<%= name %>.component.html',
-          <% } else { %>
-            template: \`<%= utils.capitalize(name) %> Template\`
-          <% } %>
-          styleUrls: ['dashboard-page-item.component.css'],
-          changeDetection: ChangeDetectionStrategy.OnPush
-        })
-        class <%= utils.capitalize(name) %>Component {}
+      text: `import {<% _.forEach(dependencies, function(dependency) { %>
+  <%- dependency %>,
+<% }); %>} from '@angular/core';
+
+export @Component({
+  selector: 'dashboard-page-item',
+  <% if (inlineTemplate) { %>templateUrl: '<%= name %>.component.html',<% } else { %>template: \`<%= utils.capitalize(name) %> Template\`<% } %>
+  styleUrls: ['dashboard-page-item.component.css'],
+  <% if (onPush) { %>changeDetection: ChangeDetectionStrategy.OnPush<% } %>
+})
+class <%= utils.capitalize(name) %>Component {}
       `
     });
 

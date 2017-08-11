@@ -11,11 +11,15 @@ export interface File {
 export class Blueprint {
   public compiledFiles: any[] = [];
 
-  constructor(private blueprintConfig: BlueprintConfig, private context: object) { }
+  constructor(private blueprintConfig: BlueprintConfig) { }
 
   public compileFiles() {
+    if(this.blueprintConfig.preCompile) {
+      this.blueprintConfig.preCompile();
+    }
+
     const context = {
-      ...this.context,
+      ...this.blueprintConfig.context,
       utils: {
         capitalize: _.capitalize,
         camelCase: _.camelCase,
@@ -51,5 +55,6 @@ export class Blueprint {
 export interface BlueprintConfig {
   context?: any,
   params?: any;
+  preCompile?: () => void;
   files: () => File[]
 }
