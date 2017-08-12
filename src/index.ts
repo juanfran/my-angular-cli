@@ -16,6 +16,7 @@ config.context = {
 const blueprintComponent = new Blueprint(config);
 
 console.log('sdfsdf');
-
+/*
 blueprintComponent.compileFiles();
 blueprintComponent.save();
+*/
