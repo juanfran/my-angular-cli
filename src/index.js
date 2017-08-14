@@ -1,4 +1,5 @@
-  // testing file
+"use strict";
+// testing file
 /*
 import { Blueprint } from './blueprints/blueprint';
 import { ComponentBluePrint } from './blueprints/angular/component.blueprint';
@@ -20,7 +21,6 @@ console.log('sdfsdf');
 blueprintComponent.compileFiles();
 blueprintComponent.save();
 */
-
-import { exampleCompile } from './ast/index';
-console.log('555');
-exampleCompile();
+exports.__esModule = true;
+var ast_1 = require("./ast");
+ast_1.exampleCompile();
