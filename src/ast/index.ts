@@ -38,9 +38,18 @@ function compile(fileNames: string[], options: ts.CompilerOptions): void {
         const imports = find(module, ts.SyntaxKind.Identifier, 'imports');
 
         if (imports && imports.parent) {
+          const listImports = find(imports.parent, ts.SyntaxKind.SyntaxList); // BrowserModule, TestModule
+
+          if (listImports) {
+            console.log(listImports.getText());
+            console.log(listImports.getChildAt(0).getText());
+          }
+
+          /*
           console.log(imports.parent);
-          console.log(imports.parent.getChildAt(2).getText());
+          console.log(imports.parent.getChildAt(2));
           console.log(imports.getText());
+          */
         }
 
         //module = find(sourceFile, ts.SyntaxKind.Identifier, 'NgModule');
