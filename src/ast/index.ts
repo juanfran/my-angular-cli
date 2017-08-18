@@ -25,7 +25,7 @@ function filter(node: ts.Node, kind: ts.SyntaxKind) {
   return list;
 }
 
-function find(node: ts.Node, kind: ts.SyntaxKind, text?: string): ts.Node | undefined {
+function find(node: ts.Node, kind: ts.SyntaxKind, text?: string): any {
   for(let children of node.getChildren()) {
     if (children.kind === kind && (!text || (text && text === children.getText()))) {
       return children;
@@ -39,14 +39,14 @@ function find(node: ts.Node, kind: ts.SyntaxKind, text?: string): ts.Node | unde
   }
 }
 
-function findListDeclarationsNode(node: ts.Node) {
+function findListDeclarationsNode(node: ts.Node): ts.SyntaxKind.ArrayLiteralExpression | undefined {
   const module = find(node, ts.SyntaxKind.Decorator);
 
   if (module && module.parent) {
     const imports = find(module, ts.SyntaxKind.Identifier, 'declarations');
 
     if (imports && imports.parent) {
-      return find(imports.parent, ts.SyntaxKind.SyntaxList); // BrowserModule, TestModule
+      return find(imports.parent, ts.SyntaxKind.ArrayLiteralExpression);
     }
   }
 }
@@ -64,18 +64,43 @@ Identifier = TestComponent
 ArrayLiteralExpression = [ AppComponent, TestComponent ]
 PropertyAssignment = declarations: [ AppComponent, TestComponent ]
 
+
+  const loggingTransformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
+      function visit(node: ts.Node): ts.Node {
+        if (ts.isArrayLiteralExpression(node)) {
+          const identifiers = filter(node, ts.SyntaxKind.Identifier);
+
+          // ts.updatePropertyAssignment ?? buscando hacia abajo te lo traes lo modficas y tirando
+          // lo busco y se lo paso a esta funcion como parametro y cuando haga node === findedNoded si coincide lo remplazo
+
+          return ts.updateArrayLiteral(node, [
+            ...identifiers,
+            ts.createIdentifier('TestComponent2')
+          ]);
+        } else {
+          node = ts.visitEachChild(node, visit, context);
+        }
+
+        return node;
+      }
+      return ts.visitNode(rootNode, visit);
+  };
 */
 
-function test1() {
+function test1(declarations) {
   const printer: ts.Printer = ts.createPrinter();
   const source: string = readFileSync(path.join(__dirname, 'example.ts')).toString();
 
   //ts.updateArrayLiteral
 
   const loggingTransformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
-      function visit(node: ts.Node): ts.Node {
-        if (ts.isArrayLiteralExpression(node)) {
+      function visit(node: any): ts.Node {
+        if (node.pos === declarations.pos) {
+          console.log('ddddd......................');
           const identifiers = filter(node, ts.SyntaxKind.Identifier);
+
+          // ts.updatePropertyAssignment ?? buscando hacia abajo te lo traes lo modficas y tirando
+          // lo busco y se lo paso a esta funcion como parametro y cuando haga node === findedNoded si coincide lo remplazo
 
           return ts.updateArrayLiteral(node, [
             ...identifiers,
@@ -118,11 +143,11 @@ function compile(fileNames: string[], options: ts.CompilerOptions): void {
       const declarations = findListDeclarationsNode(sourceFile);
 
       if (declarations) {
-        // console.log(declarations);
+        test1(declarations);
       }
 
-      test1();
 
+      console.log(declarations);
 
 
       /*
