@@ -51,41 +51,14 @@ function findListDeclarationsNode(node: ts.Node) {
   }
 }
 
-function create(name: string) {
-  ts.createIdentifier('TestComponent');
+function addImport(name: string, path: string) {
+  return ts.createImportDeclaration(
+    undefined,
+    undefined,
+    ts.createImportClause(ts.createIdentifier(name), undefined),
+    ts.createLiteral(path)
+  )
 }
-
-
-/*
-Decorator = the full module
-Identifier = NgModule
-Identifier = declarations
-Identifier = TestComponent
-ArrayLiteralExpression = [ AppComponent, TestComponent ]
-PropertyAssignment = declarations: [ AppComponent, TestComponent ]
-
-
-  const loggingTransformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
-      function visit(node: ts.Node): ts.Node {
-        if (ts.isArrayLiteralExpression(node)) {
-          const identifiers = filter(node, ts.SyntaxKind.Identifier);
-
-          // ts.updatePropertyAssignment ?? buscando hacia abajo te lo traes lo modficas y tirando
-          // lo busco y se lo paso a esta funcion como parametro y cuando haga node === findedNoded si coincide lo remplazo
-
-          return ts.updateArrayLiteral(node, [
-            ...identifiers,
-            ts.createIdentifier('TestComponent2')
-          ]);
-        } else {
-          node = ts.visitEachChild(node, visit, context);
-        }
-
-        return node;
-      }
-      return ts.visitNode(rootNode, visit);
-  };
-*/
 
 function test1(declarations) {
   const printer: ts.Printer = ts.createPrinter();
@@ -95,6 +68,7 @@ function test1(declarations) {
 
   const loggingTransformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
       function visit(node: any): ts.Node {
+        console.log("Visiting " + ts.SyntaxKind[node.kind]);
         if (node.pos === declarations.pos) {
           const identifiers = filter(node, ts.SyntaxKind.Identifier);
 
@@ -108,6 +82,7 @@ function test1(declarations) {
 
         return node;
       }
+
       return ts.visitNode(rootNode, visit);
   };
 
@@ -116,16 +91,17 @@ function test1(declarations) {
     'test.ts', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
 
-  //console.log('source');
-  //console.log(printer.printFile(sourceFile));
-
-
   // Options may be passed to transform
   const result: ts.TransformationResult<ts.SourceFile> = ts.transform<ts.SourceFile>(
     sourceFile, [ loggingTransformer ]
   );
 
   const transformedSourceFile: ts.SourceFile = result.transformed[0];
+
+  transformedSourceFile.statements = ts.createNodeArray([
+    addImport('TestComponent2', 'path/to'),
+    ...transformedSourceFile.statements
+  ]);
 
   console.log('trnasformed');
   console.log(printer.printFile(transformedSourceFile));
@@ -141,50 +117,8 @@ function compile(fileNames: string[], options: ts.CompilerOptions): void {
       if (declarations) {
         test1(declarations);
       }
-
-      /*
-      ts.forEachChild(sourceFile, (x) => {
-        if (x.kind === ts.SyntaxKind.ClassDeclaration) {
-          console.log('-----each');;
-
-          console.log('==========================');
-          //console.log(result);
-
-          if (x.decorators && x.decorators.length) {
-            // NgModule
-            let x1 = x.getChildAt(0).getChildAt(0).getChildAt(1).getChildAt(0);
-            console.log('x1', x1.kind, x1.getText());
-            console.log(x1);
-
-            const expression = x.decorators[0].expression;
-
-            const initDecoData = expression.getChildAt(2).getChildAt(0).getChildAt(1);
-            const imports = initDecoData.getChildAt(0);
-            const listImports = imports.getChildAt(2);
-            //console.log(listImports.getChildAt(1).getText()); // browser module
-
-
-
-          }
-        }
-      });*/
   });
 }
-
-
-/*            function addImport(file, name, pathTo) {
-	file.statements.unshift(
-		ts.createImportDeclaration(
-			undefined,
-			undefined,
-			ts.createImportClause(ts.createIdentifier(name)),
-			ts.createLiteral(pathTo)
-		)
-	);
-	return file;
-}
-
-*/
 
 export const exampleCompile = () => {
   compile([path.join(__dirname, 'example.ts')], {
