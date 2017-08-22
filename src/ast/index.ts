@@ -3,11 +3,6 @@ import * as path from 'path';
 import {readFileSync} from "fs";
 import { ArrayLiteralExpression } from "typescript";
 
-function lineChar(sourceFile, node) {
-  let { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-  console.log(line, character);
-}
-
 function filter(node: ts.Node, kind: ts.SyntaxKind) {
   let list: any[] = [];
 
@@ -52,12 +47,13 @@ function findListDeclarationsNode(node: ts.Node) {
 }
 
 function addImport(name: string, path: string) {
+  var newImportSpecifier = ts.createImportSpecifier(undefined, ts.createIdentifier(name));
+
   return ts.createImportDeclaration(
     undefined,
     undefined,
-    ts.createImportClause(ts.createIdentifier(name), undefined),
-    ts.createLiteral(path)
-  )
+    ts.createImportClause(undefined, ts.createNamedImports([newImportSpecifier])),
+    ts.createLiteral(path));
 }
 
 function test1(declarations) {
