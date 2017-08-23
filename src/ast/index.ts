@@ -56,30 +56,47 @@ function addImport(name: string, path: string) {
     ts.createLiteral(path));
 }
 
-function test1(declarations) {
+function test1() {
   const printer: ts.Printer = ts.createPrinter();
   const source: string = readFileSync(path.join(__dirname, 'example.ts')).toString();
 
-  //ts.updateArrayLiteral
+  const loggingTransformer = <T extends ts.Node>(transformationContext: ts.TransformationContext) => (rootNode: T) => {
+    function propertyAssignmentVisitor(node: ts.Node): ts.Node {
+      if (ts.isArrayLiteralExpression(node)) {
+        const identifiers = filter(node, ts.SyntaxKind.Identifier);
 
-  const loggingTransformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
-      function visit(node: any): ts.Node {
-        console.log("Visiting " + ts.SyntaxKind[node.kind]);
-        if (node.pos === declarations.pos) {
-          const identifiers = filter(node, ts.SyntaxKind.Identifier);
-
-          return ts.updateArrayLiteral(node, [
-            ...identifiers,
-            ts.createIdentifier('TestComponent2')
-          ]);
-        } else {
-          node = ts.visitEachChild(node, visit, context);
-        }
-
-        return node;
+        return ts.updateArrayLiteral(node, [
+          ...identifiers,
+          ts.createIdentifier('TestComponent3')
+        ]);
+      } else {
+        node = ts.visitEachChild(node, propertyAssignmentVisitor, transformationContext);
       }
 
-      return ts.visitNode(rootNode, visit);
+      return node;
+    }
+
+    function decoratorVisitor(node: ts.Node): ts.Node {
+      if (ts.isPropertyAssignment(node) && node.name.getText() === 'declarations') {
+        node = ts.visitEachChild(node, propertyAssignmentVisitor, transformationContext);
+      } else {
+        node = ts.visitEachChild(node, decoratorVisitor, transformationContext);
+      }
+
+      return node;
+    }
+
+    function visit(node: ts.Node): ts.Node {
+      if (ts.isDecorator(node)) {
+        node = ts.visitEachChild(node, decoratorVisitor, transformationContext);
+      } else {
+        node = ts.visitEachChild(node, visit, transformationContext);
+      }
+
+      return node;
+    }
+
+    return ts.visitNode(rootNode, visit);
   };
 
 
@@ -87,7 +104,6 @@ function test1(declarations) {
     'test.ts', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
 
-  // Options may be passed to transform
   const result: ts.TransformationResult<ts.SourceFile> = ts.transform<ts.SourceFile>(
     sourceFile, [ loggingTransformer ]
   );
@@ -111,7 +127,7 @@ function compile(fileNames: string[], options: ts.CompilerOptions): void {
       const declarations = findListDeclarationsNode(sourceFile);
 
       if (declarations) {
-        test1(declarations);
+        test1();
       }
   });
 }
@@ -123,8 +139,3 @@ export const exampleCompile = () => {
   });
 
 };
-
-/*
-Decorator = 147
-SyntaxList = 295,
-*/
