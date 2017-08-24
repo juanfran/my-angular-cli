@@ -1,7 +1,24 @@
 import * as ts from "typescript";
 import * as path from 'path';
-import {readFileSync} from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { ArrayLiteralExpression } from "typescript";
+
+const example = `
+import { NgModule }      from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    BrowserModule,
+    TestModule
+  ],
+  declarations: [ AppComponent, TestComponent ],
+  bootstrap:    [ AppComponent ]
+})
+export class AppModule { }
+
+`;
 
 function filter(node: ts.Node, kind: ts.SyntaxKind) {
   let list: any[] = [];
@@ -56,9 +73,9 @@ function addImport(name: string, path: string) {
     ts.createLiteral(path));
 }
 
-function test1() {
+function test1(componentName: string, componentPath: string, modulePath: string) {
   const printer: ts.Printer = ts.createPrinter();
-  const source: string = readFileSync(path.join(__dirname, 'example.ts')).toString();
+  const source: string = readFileSync(modulePath).toString();
 
   const loggingTransformer = <T extends ts.Node>(transformationContext: ts.TransformationContext) => (rootNode: T) => {
     function propertyAssignmentVisitor(node: ts.Node): ts.Node {
@@ -67,7 +84,7 @@ function test1() {
 
         return ts.updateArrayLiteral(node, [
           ...identifiers,
-          ts.createIdentifier('TestComponent3')
+          ts.createIdentifier(componentName)
         ]);
       } else {
         node = ts.visitEachChild(node, propertyAssignmentVisitor, transformationContext);
@@ -101,7 +118,7 @@ function test1() {
 
 
   const sourceFile: ts.SourceFile = ts.createSourceFile(
-    'test.ts', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
+    modulePath, source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
 
   const result: ts.TransformationResult<ts.SourceFile> = ts.transform<ts.SourceFile>(
@@ -111,15 +128,26 @@ function test1() {
   const transformedSourceFile: ts.SourceFile = result.transformed[0];
 
   transformedSourceFile.statements = ts.createNodeArray([
-    addImport('TestComponent2', 'path/to'),
+    addImport(componentName, componentPath),
     ...transformedSourceFile.statements
   ]);
+
+
+  writeFileSync(modulePath, printer.printFile(transformedSourceFile));
 
   console.log('trnasformed');
   console.log(printer.printFile(transformedSourceFile));
 }
 
 function compile(fileNames: string[], options: ts.CompilerOptions): void {
+  console.log(readFileSync(path.join(process.cwd(), 'src/app/cms/cms.module.ts')).toString());
+
+  test1(
+    'Test1Component',
+    '../component1/testcomponent',
+    path.join(process.cwd(), 'src/app/cms/cms.module.ts')
+  );
+  /*
   fileNames.forEach(fileName => {
 
       let sourceFile = ts.createSourceFile(fileName, readFileSync(fileName).toString(), ts.ScriptTarget.Latest, true);
@@ -127,9 +155,10 @@ function compile(fileNames: string[], options: ts.CompilerOptions): void {
       const declarations = findListDeclarationsNode(sourceFile);
 
       if (declarations) {
-        test1();
+        //test1();
       }
   });
+  */
 }
 
 export const exampleCompile = () => {

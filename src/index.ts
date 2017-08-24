@@ -22,5 +22,5 @@ blueprintComponent.save();
 */
 
 import { exampleCompile } from './ast/index';
-console.log('555');
+
 exampleCompile();
