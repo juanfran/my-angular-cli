@@ -6,3 +6,4 @@
 - empty declarations 
 - no declarations
 - module not found
+- if the last declaration has comma not added

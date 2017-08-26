@@ -103,99 +103,34 @@ function test1(componentName: string, componentPath: string, modulePath: string)
     newLine: ts.NewLineKind.LineFeed
   });
 
-  // const source: string = readFileSync(modulePath).toString();
-  const source = example;
+  let source: string = readFileSync(modulePath).toString();
 
-/*   const loggingTransformer = <T extends ts.Node>(transformationContext: ts.TransformationContext) => (rootNode: T) => {
-    function propertyAssignmentVisitor(node: ts.Node): ts.Node {
-      if (ts.isArrayLiteralExpression(node)) {
-        const identifiers = filter(node, ts.SyntaxKind.Identifier);
-
-        return ts.updateArrayLiteral(node, [
-          ...identifiers,
-          ts.createIdentifier(componentName)
-        ]);
-      } else {
-        node = ts.visitEachChild(node, propertyAssignmentVisitor, transformationContext);
-      }
-
-      return node;
-    }
-
-    function decoratorVisitor(node: ts.Node): ts.Node {
-      if (ts.isPropertyAssignment(node) && node.name.getText() === 'declarations') {
-        node = ts.visitEachChild(node, propertyAssignmentVisitor, transformationContext);
-      } else {
-        node = ts.visitEachChild(node, decoratorVisitor, transformationContext);
-      }
-
-      return node;
-    }
-
-    function visit(node: ts.Node): ts.Node {
-      if (ts.isDecorator(node)) {
-        node = ts.visitEachChild(node, decoratorVisitor, transformationContext);
-      } else {
-        node = ts.visitEachChild(node, visit, transformationContext);
-      }
-
-      return node;
-    }
-
-    return ts.visitNode(rootNode, visit);
-  };
-
- */
   const sourceFile: ts.SourceFile = ts.createSourceFile(
     modulePath, source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
 
-  let str = '';
   const declarations = findListDeclarationsNode(sourceFile);
   console.log(declarations);
 
-  str = [example.slice(0, declarations), `, ${componentName}`, example.slice(declarations)].join('');
+  source = [source.slice(0, declarations), `, ${componentName}`, source.slice(declarations)].join('');
   //console.log(declarations.getText());
 
 
+  let toInsert = `import { ${componentName} }` +
+  ` from '${componentPath}';\n`;
 
-  /*
-  const result: ts.TransformationResult<ts.SourceFile> = ts.transform<ts.SourceFile>(
-    sourceFile, [ loggingTransformer ]
-  );
+  source = toInsert + source;
 
-  const transformedSourceFile: ts.SourceFile = result.transformed[0];
-
-  transformedSourceFile.statements = ts.createNodeArray([
-    addImport(componentName, componentPath),
-    ...transformedSourceFile.statements
-  ]);
-  */
-
-  // const str = printer.printFile(transformedSourceFile);
-
-  //writeFileSync(modulePath, str);
-  console.log(str);
+  writeFileSync(modulePath, source);
+  console.log(source);
 }
 
 function compile(fileNames: string[], options: ts.CompilerOptions): void {
   test1(
     'Test1Component',
     '../component1/testcomponent',
-    path.join(process.cwd(), 'src/app/cms/cms.module.ts')
+    path.join(process.cwd(), '.module.ts')
   );
-  /*
-  fileNames.forEach(fileName => {
-
-      let sourceFile = ts.createSourceFile(fileName, readFileSync(fileName).toString(), ts.ScriptTarget.Latest, true);
-
-      const declarations = findListDeclarationsNode(sourceFile);
-
-      if (declarations) {
-        //test1();
-      }
-  });
-  */
 }
 
 export const exampleCompile = () => {
@@ -203,5 +138,4 @@ export const exampleCompile = () => {
       noEmitOnError: true, noImplicitAny: true,
       target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
   });
-
 };
