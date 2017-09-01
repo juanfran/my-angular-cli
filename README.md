@@ -3,7 +3,5 @@
 ## todos
 - add declaration in module if not exist
 - declarations multiline
-- empty declarations 
-- no declarations
 - module not found
-- if the last declaration has comma not added
+- if the last declaration has already a comma not added

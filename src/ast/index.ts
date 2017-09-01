@@ -20,7 +20,7 @@ export class AppModule { }
 
 `;
 
-function filter(node: ts.Node, kind: ts.SyntaxKind) {
+function filter<T extends ts.Node>(node: ts.Node, kind: ts.SyntaxKind): T[] {
   let list: any[] = [];
 
   node.getChildren().forEach((children) => {
@@ -37,12 +37,12 @@ function filter(node: ts.Node, kind: ts.SyntaxKind) {
   return list;
 }
 
-function find(node: ts.Node, kind: ts.SyntaxKind, text?: string) {
+function find<T extends ts.Node>(node: ts.Node, kind: ts.SyntaxKind, text?: string): T | undefined {
   for(let children of node.getChildren()) {
     if (children.kind === kind && (!text || (text && text === children.getText()))) {
-      return children;
+      return children as T;
     } else {
-      const childrenFinded = find(children, kind, text);
+      const childrenFinded = find<T>(children, kind, text);
 
       if (childrenFinded) {
         return childrenFinded;
@@ -69,21 +69,14 @@ function findLast(node: ts.Node, kind: ts.SyntaxKind, text?: string) {
   return lastChildren;
 }
 
-function findListDeclarationsNode(node: ts.Node) {
-  const module = find(node, ts.SyntaxKind.Decorator);
+function getDeclarationListNode(node: ts.Node): ts.SyntaxList | undefined {
+  const module = find<ts.Decorator>(node, ts.SyntaxKind.Decorator);
 
   if (module && module.parent) {
-    const imports = find(module, ts.SyntaxKind.Identifier, 'declarations');
+    const imports = find<ts.Identifier>(module, ts.SyntaxKind.Identifier, 'declarations');
 
     if (imports && imports.parent) {
-      const declarations = find(imports.parent, ts.SyntaxKind.SyntaxList);
-
-      /// const closeBraket = find(declarations, ts.SyntaxKind.CloseBracketToken);
-      console.log(declarations);
-
-      return declarations.end;
-
-      //console.log(ts.SyntaxKind[declarations.getChildAt(2).kind]);
+      return find<ts.SyntaxList>(imports.parent, ts.SyntaxKind.SyntaxList);
     }
   }
 }
@@ -103,25 +96,32 @@ function test1(componentName: string, componentPath: string, modulePath: string)
     newLine: ts.NewLineKind.LineFeed
   });
 
-  let source: string = readFileSync(modulePath).toString();
+  // let source: string = readFileSync(modulePath).toString();
+  let source = example;
 
   const sourceFile: ts.SourceFile = ts.createSourceFile(
     modulePath, source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
 
-  const declarations = findListDeclarationsNode(sourceFile);
-  console.log(declarations);
+  const declarationsListNode = getDeclarationListNode(sourceFile);
 
-  source = [source.slice(0, declarations), `, ${componentName}`, source.slice(declarations)].join('');
-  //console.log(declarations.getText());
+  if (declarationsListNode) {
+    const declarations = filter<ts.Identifier>(declarationsListNode, ts.SyntaxKind.Identifier);
+    const insertPosition = declarationsListNode.end;
 
+    if (declarations.length) {
+      source = [source.slice(0, insertPosition), `, ${componentName}`, source.slice(insertPosition)].join('');
+    } else {
+      source = [source.slice(0, insertPosition), componentName, source.slice(insertPosition)].join('');
+    }
+  }
 
   let toInsert = `import { ${componentName} }` +
   ` from '${componentPath}';\n`;
 
   source = toInsert + source;
 
-  writeFileSync(modulePath, source);
+  //writeFileSync(modulePath, source);
   console.log(source);
 }
 
