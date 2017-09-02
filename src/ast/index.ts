@@ -109,7 +109,11 @@ function test1(componentName: string, componentPath: string, modulePath: string)
     const declarations = filter<ts.Identifier>(declarationsListNode, ts.SyntaxKind.Identifier);
     const insertPosition = declarationsListNode.end;
 
-    if (declarations.length) {
+    const lastListNodeChildren = declarationsListNode.getChildAt(declarationsListNode.getChildCount() - 1);
+
+    console.log(lastListNodeChildren.kind === ts.SyntaxKind.CommaToken);
+
+    if (declarations.length && lastListNodeChildren.kind !== ts.SyntaxKind.CommaToken) {
       source = [source.slice(0, insertPosition), `, ${componentName}`, source.slice(insertPosition)].join('');
     } else {
       source = [source.slice(0, insertPosition), componentName, source.slice(insertPosition)].join('');
