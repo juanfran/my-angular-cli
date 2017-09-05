@@ -20,6 +20,10 @@ export class AppModule { }
 
 `;
 
+function getIndentation(text: string) {
+  return text.match(/^\r?\n\s+/);
+}
+
 function filter<T extends ts.Node>(node: ts.Node, kind: ts.SyntaxKind): T[] {
   let list: any[] = [];
 
@@ -91,16 +95,15 @@ function addImport(name: string, path: string) {
     ts.createLiteral(path));
 }
 
-function test1(componentName: string, componentPath: string, modulePath: string) {
+export function addComponent(source: string, componentName: string, componentPath: string) {
   const printer: ts.Printer = ts.createPrinter({
     newLine: ts.NewLineKind.LineFeed
   });
 
   // let source: string = readFileSync(modulePath).toString();
-  let source = example;
 
   const sourceFile: ts.SourceFile = ts.createSourceFile(
-    modulePath, source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
+    '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
 
   const declarationsListNode = getDeclarationListNode(sourceFile);
@@ -111,35 +114,22 @@ function test1(componentName: string, componentPath: string, modulePath: string)
 
     const lastListNodeChildren = declarationsListNode.getChildAt(declarationsListNode.getChildCount() - 1);
 
-    console.log(lastListNodeChildren.kind === ts.SyntaxKind.CommaToken);
-
     if (declarations.length && lastListNodeChildren.kind !== ts.SyntaxKind.CommaToken) {
       source = [source.slice(0, insertPosition), `, ${componentName}`, source.slice(insertPosition)].join('');
     } else {
-      source = [source.slice(0, insertPosition), componentName, source.slice(insertPosition)].join('');
+      source = [source.slice(0, insertPosition), ' ' + componentName, source.slice(insertPosition)].join('');
     }
   }
 
   let toInsert = `import { ${componentName} }` +
   ` from '${componentPath}';\n`;
 
-  source = toInsert + source;
 
-  //writeFileSync(modulePath, source);
-  console.log(source);
-}
-
-function compile(fileNames: string[], options: ts.CompilerOptions): void {
-  test1(
-    'Test1Component',
-    '../component1/testcomponent',
-    path.join(process.cwd(), '.module.ts')
-  );
+    //writeFileSync(modulePath, source);
+    //console.log(source);
+  return toInsert + source;
 }
 
 export const exampleCompile = () => {
-  compile([path.join(__dirname, 'example.ts')], {
-      noEmitOnError: true, noImplicitAny: true,
-      target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
-  });
+  addComponent
 };
