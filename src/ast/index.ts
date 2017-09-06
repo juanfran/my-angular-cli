@@ -101,7 +101,6 @@ export function addComponent(source: string, componentName: string, componentPat
   });
 
   // let source: string = readFileSync(modulePath).toString();
-
   const sourceFile: ts.SourceFile = ts.createSourceFile(
     '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
@@ -114,20 +113,37 @@ export function addComponent(source: string, componentName: string, componentPat
 
     const lastListNodeChildren = declarationsListNode.getChildAt(declarationsListNode.getChildCount() - 1);
 
-    if (declarations.length && lastListNodeChildren.kind !== ts.SyntaxKind.CommaToken) {
-      source = [source.slice(0, insertPosition), `, ${componentName}`, source.slice(insertPosition)].join('');
+    const toInsert: string[] = [];
+
+    if (declarations.length) {
+      const lastDeclaration = declarations[declarations.length - 1];
+      const indentation = getIndentation(lastDeclaration.getFullText());
+
+      if (lastListNodeChildren.kind !== ts.SyntaxKind.CommaToken) {
+        toInsert.push(',');
+      }
+
+      if (indentation && indentation.length) {
+        toInsert.push(indentation[0]);
+      } else {
+        toInsert.push(' ');
+      }
+
+      toInsert.push(componentName);
     } else {
-      source = [source.slice(0, insertPosition), ' ' + componentName, source.slice(insertPosition)].join('');
+      toInsert.push(' ' + componentName);
     }
+
+    source = [source.slice(0, insertPosition), toInsert.join(''), source.slice(insertPosition)].join('');
   }
 
-  let toInsert = `import { ${componentName} }` +
+  const result = `import { ${componentName} }` +
   ` from '${componentPath}';\n`;
 
 
     //writeFileSync(modulePath, source);
     //console.log(source);
-  return toInsert + source;
+  return result + source;
 }
 
 export const exampleCompile = () => {
