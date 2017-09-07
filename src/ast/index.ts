@@ -73,8 +73,25 @@ function findLast(node: ts.Node, kind: ts.SyntaxKind, text?: string) {
   return lastChildren;
 }
 
+function getDecorator(node: ts.Node, id: string): ts.Decorator | undefined {
+  const decorators = filter<ts.Decorator>(node, ts.SyntaxKind.Decorator);
+
+  if (decorators.length) {
+    return decorators.find((decorator) => {
+      const expr = decorator.expression as ts.CallExpression;
+
+      if (expr.expression.kind == ts.SyntaxKind.Identifier) {
+        const exprId = expr.expression as ts.Identifier;
+        return exprId.getFullText() === id;
+      }
+
+      return false;
+    });
+  }
+}
+
 function getDeclarationListNode(node: ts.Node): ts.SyntaxList | undefined {
-  const module = find<ts.Decorator>(node, ts.SyntaxKind.Decorator);
+  const module = getDecorator(node, 'NgModule');
 
   if (module && module.parent) {
     const imports = find<ts.Identifier>(module, ts.SyntaxKind.Identifier, 'declarations');
@@ -131,10 +148,12 @@ export function addComponent(source: string, componentName: string, componentPat
 
       toInsert.push(componentName);
     } else {
-      toInsert.push(' ' + componentName);
+      toInsert.push(' ' + componentName + ' ');
     }
 
     source = [source.slice(0, insertPosition), toInsert.join(''), source.slice(insertPosition)].join('');
+  } else {
+    console.log('sdfsdf');
   }
 
   const result = `import { ${componentName} }` +

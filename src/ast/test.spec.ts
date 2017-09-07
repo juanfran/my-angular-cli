@@ -173,6 +173,10 @@ import { AppComponent }  from './app.component';
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }`;
+
+      const resultText = addComponent(file, 'TestComponent', '../component1/testcomponent');
+
+      expect(resultText).to.be.equal(fileExpected);
     });
 
     it('add component without declarations', () => {
@@ -199,6 +203,10 @@ import { AppComponent }  from './app.component';
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }`;
+
+      const resultText = addComponent(file, 'TestComponent', '../component1/testcomponent');
+
+      expect(resultText).to.be.equal(fileExpected);
     });
   });
 
