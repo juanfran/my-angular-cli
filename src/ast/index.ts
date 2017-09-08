@@ -122,38 +122,58 @@ export function addComponent(source: string, componentName: string, componentPat
     '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
 
+  const module = getDecorator(sourceFile, 'NgModule');
   const declarationsListNode = getDeclarationListNode(sourceFile);
 
-  if (declarationsListNode) {
-    const declarations = filter<ts.Identifier>(declarationsListNode, ts.SyntaxKind.Identifier);
-    const insertPosition = declarationsListNode.end;
+  if (module) {
+    if (declarationsListNode) {
+      const declarations = filter<ts.Identifier>(declarationsListNode, ts.SyntaxKind.Identifier);
+      const insertPosition = declarationsListNode.end;
 
-    const lastListNodeChildren = declarationsListNode.getChildAt(declarationsListNode.getChildCount() - 1);
+      const lastListNodeChildren = declarationsListNode.getChildAt(declarationsListNode.getChildCount() - 1);
 
-    const toInsert: string[] = [];
+      const toInsert: string[] = [];
 
-    if (declarations.length) {
-      const lastDeclaration = declarations[declarations.length - 1];
-      const indentation = getIndentation(lastDeclaration.getFullText());
+      if (declarations.length) {
+        const lastDeclaration = declarations[declarations.length - 1];
+        const indentation = getIndentation(lastDeclaration.getFullText());
 
-      if (lastListNodeChildren.kind !== ts.SyntaxKind.CommaToken) {
-        toInsert.push(',');
-      }
+        if (lastListNodeChildren.kind !== ts.SyntaxKind.CommaToken) {
+          toInsert.push(',');
+        }
 
-      if (indentation && indentation.length) {
-        toInsert.push(indentation[0]);
+        if (indentation && indentation.length) {
+          toInsert.push(indentation[0]);
+        } else {
+          toInsert.push(' ');
+        }
+
+        toInsert.push(componentName);
       } else {
-        toInsert.push(' ');
+        toInsert.push(' ' + componentName + ' ');
       }
 
-      toInsert.push(componentName);
+      source = [source.slice(0, insertPosition), toInsert.join(''), source.slice(insertPosition)].join('');
     } else {
-      toInsert.push(' ' + componentName + ' ');
-    }
+      const expr = find<ts.ObjectLiteralExpression>(module, ts.SyntaxKind.ObjectLiteralExpression);
+      if (expr) {
+        const firstProperty = find<ts.PropertyAssignment>(expr, ts.SyntaxKind.PropertyAssignment);
+        const firstPunctuation = find(expr, ts.SyntaxKind.FirstPunctuation);
 
-    source = [source.slice(0, insertPosition), toInsert.join(''), source.slice(insertPosition)].join('');
-  } else {
-    console.log('sdfsdf');
+        if (firstProperty && firstPunctuation) {
+          const toInsert: string[] = [];
+          const insertPosition = firstPunctuation.end;
+          const indentation = getIndentation(firstProperty.getFullText());
+
+          if (indentation) {
+            toInsert.push(indentation[0]);
+            toInsert.push(`declarations: [ ${componentName} ],`)
+          }
+
+          source = [source.slice(0, insertPosition), toInsert.join(''), source.slice(insertPosition)].join('');
+        }
+      }
+    }
   }
 
   const result = `import { ${componentName} }` +

@@ -196,10 +196,10 @@ import { NgModule }      from '@angular/core';
 import { AppComponent }  from './app.component';
 
 @NgModule({
+  declarations: [ TestComponent ],
   imports: [
     TestModule
   ],
-  declarations: [ TestComponent ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }`;
