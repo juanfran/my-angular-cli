@@ -8,7 +8,7 @@ const expect = chai.expect;
 chai.use(sinonChai);
 
 describe('Ast', () => {
-  describe.only('add component', () => {
+  describe('add component', () => {
     it('add component in inline declaration', () => {
       const file = `import { NgModule }      from '@angular/core';
 import { AppComponent }  from './app.component';

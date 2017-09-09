@@ -3,50 +3,33 @@ import * as path from 'path';
 import { readFileSync, writeFileSync } from "fs";
 import { ArrayLiteralExpression } from "typescript";
 
-const example = `
-import { NgModule }      from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { AppComponent }  from './app.component';
-
-@NgModule({
-  imports: [
-    BrowserModule,
-    TestModule
-  ],
-  declarations: [ AppComponent, TestComponent ],
-  bootstrap:    [ AppComponent ]
-})
-export class AppModule { }
-
-`;
-
 function getIndentation(text: string) {
   return text.match(/^\r?\n\s+/);
 }
 
-function filter<T extends ts.Node>(node: ts.Node, kind: ts.SyntaxKind): T[] {
+function filter(node: ts.Node, fn: (node: ts.Node) => boolean): any[] {
   let list: any[] = [];
 
   node.getChildren().forEach((children) => {
-    if (children.kind === kind) {
+    if (fn(children)) {
       list.push(children);
     }
 
     list = [
       ...list,
-      ...filter(children, kind)
+      ...filter(children, fn)
     ]
   });
 
   return list;
 }
 
-function find<T extends ts.Node>(node: ts.Node, kind: ts.SyntaxKind, text?: string): T | undefined {
+function find(node: ts.Node, fn: (node: ts.Node) => boolean) {
   for(let children of node.getChildren()) {
-    if (children.kind === kind && (!text || (text && text === children.getText()))) {
-      return children as T;
+    if (fn(children)) {
+      return children;
     } else {
-      const childrenFinded = find<T>(children, kind, text);
+      const childrenFinded = find(children, fn);
 
       if (childrenFinded) {
         return childrenFinded;
@@ -55,14 +38,14 @@ function find<T extends ts.Node>(node: ts.Node, kind: ts.SyntaxKind, text?: stri
   }
 }
 
-function findLast(node: ts.Node, kind: ts.SyntaxKind, text?: string) {
+function findLast(node: ts.Node, fn: (node: ts.Node) => boolean) {
   let lastChildren;
 
   for(let children of node.getChildren()) {
-    if (children.kind === kind && (!text || (text && text === children.getText()))) {
+    if (fn(children)) {
       lastChildren = children;
     } else {
-      const childrenFinded = find(children, kind, text);
+      const childrenFinded = find(children, fn);
 
       if (childrenFinded) {
         lastChildren = children;
@@ -74,33 +57,113 @@ function findLast(node: ts.Node, kind: ts.SyntaxKind, text?: string) {
 }
 
 function getDecorator(node: ts.Node, id: string): ts.Decorator | undefined {
-  const decorators = filter<ts.Decorator>(node, ts.SyntaxKind.Decorator);
+  return query([node])
+    .find((node) => {
+      if (node.kind === ts.SyntaxKind.Decorator) {
+        const expr = node.expression as ts.CallExpression;
 
-  if (decorators.length) {
-    return decorators.find((decorator) => {
-      const expr = decorator.expression as ts.CallExpression;
-
-      if (expr.expression.kind == ts.SyntaxKind.Identifier) {
-        const exprId = expr.expression as ts.Identifier;
-        return exprId.getFullText() === id;
+        if (expr.expression.kind == ts.SyntaxKind.Identifier) {
+          const exprId = expr.expression as ts.Identifier;
+          return exprId.getFullText() === id;
+        }
       }
 
       return false;
-    });
-  }
+    })
+    .get();
 }
 
 function getDeclarationListNode(node: ts.Node): ts.SyntaxList | undefined {
   const module = getDecorator(node, 'NgModule');
 
   if (module && module.parent) {
-    const imports = find<ts.Identifier>(module, ts.SyntaxKind.Identifier, 'declarations');
+    const imports = query([module])
+      .find((node) => node.kind === ts.SyntaxKind.Identifier && node.getText() === 'declarations')
+      .get();
 
     if (imports && imports.parent) {
-      return find<ts.SyntaxList>(imports.parent, ts.SyntaxKind.SyntaxList);
+      return query([imports.parent])
+      .find((node) => node.kind === ts.SyntaxKind.SyntaxList)
+      .get();
     }
   }
 }
+
+const query = (nodes: any[] = []) => {
+  const _query = {
+    filter: (condition) => {
+      const filterNodes = nodes.reduce((oldValue: any[], currentValue) => {
+        const value: any[] = [];
+        value.push(...oldValue);
+        value.push(...filter(currentValue, condition));
+
+        return value;
+      }, []);
+
+      return query(filterNodes);
+    },
+    find: (condition) => {
+      let resultNode;
+
+      nodes.find((node) => {
+        const result = find(node, condition);
+
+        if (result) {
+          resultNode = result;
+        }
+
+        return result;
+      });
+
+      if (resultNode) {
+        return query([resultNode]);
+      } else {
+        return query([]);
+      }
+    },
+    findLast: (condition) => {
+      let last;
+
+      for(let node of nodes) {
+        const finded = findLast(node, condition);
+
+        if (finded) {
+          last = finded;
+        }
+      }
+
+      if (last) {
+        return query([last]);
+      } else {
+        return query([]);
+      }
+    },
+    first: () => {
+      if (nodes.length) {
+        return query([nodes[0]]);
+      } else {
+        return query([]);
+      }
+    },
+    last: () => {
+      if (nodes.length) {
+        return query(nodes[nodes.length - 1]);
+      } else {
+        return query([]);
+      }
+    },
+    get: (index: number = 0) => {
+      if (nodes[index]) {
+        return nodes[index];
+      }
+    },
+    getAll: () => {
+      return nodes;
+    }
+  }
+
+  return _query;
+};
 
 function addImport(name: string, path: string) {
   var newImportSpecifier = ts.createImportSpecifier(undefined, ts.createIdentifier(name));
@@ -127,9 +190,11 @@ export function addComponent(source: string, componentName: string, componentPat
 
   if (module) {
     if (declarationsListNode) {
-      const declarations = filter<ts.Identifier>(declarationsListNode, ts.SyntaxKind.Identifier);
-      const insertPosition = declarationsListNode.end;
+      const declarations = query([declarationsListNode])
+        .filter((node) => node.kind === ts.SyntaxKind.Identifier)
+        .getAll();
 
+      const insertPosition = declarationsListNode.end;
       const lastListNodeChildren = declarationsListNode.getChildAt(declarationsListNode.getChildCount() - 1);
 
       const toInsert: string[] = [];
@@ -155,10 +220,18 @@ export function addComponent(source: string, componentName: string, componentPat
 
       source = [source.slice(0, insertPosition), toInsert.join(''), source.slice(insertPosition)].join('');
     } else {
-      const expr = find<ts.ObjectLiteralExpression>(module, ts.SyntaxKind.ObjectLiteralExpression);
+      const expr = query([module])
+        .find((node) => node.kind === ts.SyntaxKind.ObjectLiteralExpression)
+        .get();
+
       if (expr) {
-        const firstProperty = find<ts.PropertyAssignment>(expr, ts.SyntaxKind.PropertyAssignment);
-        const firstPunctuation = find(expr, ts.SyntaxKind.FirstPunctuation);
+        const firstProperty = query([expr])
+          .find((node) => node.kind === ts.SyntaxKind.PropertyAssignment)
+          .get();
+
+        const firstPunctuation = query([expr])
+          .find((node) => node.kind === ts.SyntaxKind.FirstPunctuation)
+          .get();
 
         if (firstProperty && firstPunctuation) {
           const toInsert: string[] = [];
