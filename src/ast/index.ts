@@ -165,14 +165,41 @@ const query = (nodes: any[] = []) => {
   return _query;
 };
 
-function addImport(name: string, path: string) {
-  var newImportSpecifier = ts.createImportSpecifier(undefined, ts.createIdentifier(name));
+export function removeComponent(source: string, componentName: string) {
+  const printer: ts.Printer = ts.createPrinter({
+    newLine: ts.NewLineKind.LineFeed
+  });
 
-  return ts.createImportDeclaration(
-    undefined,
-    undefined,
-    ts.createImportClause(undefined, ts.createNamedImports([newImportSpecifier])),
-    ts.createLiteral(path));
+  const sourceFile: ts.SourceFile = ts.createSourceFile(
+    '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
+  );
+
+  const module = getDecorator(sourceFile, 'NgModule');
+  const declarationsListNode = getDeclarationListNode(sourceFile);
+
+  if (module && declarationsListNode) {
+    const declarations = query([declarationsListNode])
+    .filter((node) => {
+      return node.kind === ts.SyntaxKind.Identifier ||  node.kind === ts.SyntaxKind.CommaToken
+    })
+    .getAll();
+
+    const componentIndex = declarations.findIndex((it) => it.getText() === componentName);
+
+    if (componentIndex) {
+      const component = declarations[componentIndex];
+
+      source = [source.slice(0, component.pos), source.slice(component.end)].join('');
+
+      if (declarations[componentIndex - 1] && declarations[componentIndex - 1].kind === ts.SyntaxKind.CommaToken) {
+          const commaToken = declarations[componentIndex - 1];
+
+          source = [source.slice(0, commaToken.pos), source.slice(commaToken.end)].join('');
+      }
+    }
+  }
+
+  return source;
 }
 
 export function addComponent(source: string, componentName: string, componentPath: string) {
@@ -180,7 +207,6 @@ export function addComponent(source: string, componentName: string, componentPat
     newLine: ts.NewLineKind.LineFeed
   });
 
-  // let source: string = readFileSync(modulePath).toString();
   const sourceFile: ts.SourceFile = ts.createSourceFile(
     '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );

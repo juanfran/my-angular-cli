@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai'
 
-import { addComponent } from './index';
+import { addComponent, removeComponent } from './index';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -205,6 +205,38 @@ import { AppComponent }  from './app.component';
 export class AppModule { }`;
 
       const resultText = addComponent(file, 'TestComponent', '../component1/testcomponent');
+
+      expect(resultText).to.be.equal(fileExpected);
+    });
+  });
+
+  describe.only('remove component', () => {
+    it('remove last component in inline declaration', () => {
+      const file = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [ AppComponent, ExammpleComponent, TestComponent ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const fileExpected = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [ AppComponent, ExammpleComponent ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const resultText = removeComponent(file, 'TestComponent');
 
       expect(resultText).to.be.equal(fileExpected);
     });
