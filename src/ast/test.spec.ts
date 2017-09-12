@@ -210,7 +210,7 @@ export class AppModule { }`;
     });
   });
 
-  describe.only('remove component', () => {
+  describe('remove component', () => {
     it('remove last component in inline declaration', () => {
       const file = `import { NgModule }      from '@angular/core';
 import { AppComponent }  from './app.component';
@@ -232,6 +232,141 @@ import { AppComponent }  from './app.component';
     TestModule
   ],
   declarations: [ AppComponent, ExammpleComponent ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const resultText = removeComponent(file, 'TestComponent');
+
+      expect(resultText).to.be.equal(fileExpected);
+    });
+
+    it('remove last component in multiline declaration', () => {
+      const file = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [
+    AppComponent,
+    ExammpleComponent,
+    TestComponent
+  ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const fileExpected = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [
+    AppComponent,
+    ExammpleComponent
+  ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const resultText = removeComponent(file, 'TestComponent');
+
+      expect(resultText).to.be.equal(fileExpected);
+    });
+
+    it('remove component in inline declaration', () => {
+      const file = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [ AppComponent, TestComponent, ExammpleComponent ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const fileExpected = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [ AppComponent, ExammpleComponent ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const resultText = removeComponent(file, 'TestComponent');
+
+      expect(resultText).to.be.equal(fileExpected);
+    });
+
+    it('remove component in multiline declaration', () => {
+      const file = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [
+    AppComponent,
+    TestComponent,
+    ExammpleComponent
+  ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const fileExpected = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [
+    AppComponent,
+    ExammpleComponent
+  ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const resultText = removeComponent(file, 'TestComponent');
+
+      expect(resultText).to.be.equal(fileExpected);
+    });
+
+
+    it('remove single component', () => {
+      const file = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [ TestComponent ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule { }`;
+
+      const fileExpected = `import { NgModule }      from '@angular/core';
+import { AppComponent }  from './app.component';
+
+@NgModule({
+  imports: [
+    TestModule
+  ],
+  declarations: [ ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }`;

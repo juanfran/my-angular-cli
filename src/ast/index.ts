@@ -186,15 +186,15 @@ export function removeComponent(source: string, componentName: string) {
 
     const componentIndex = declarations.findIndex((it) => it.getText() === componentName);
 
-    if (componentIndex) {
+    if (declarations[componentIndex]) {
       const component = declarations[componentIndex];
 
       source = [source.slice(0, component.pos), source.slice(component.end)].join('');
 
       if (declarations[componentIndex - 1] && declarations[componentIndex - 1].kind === ts.SyntaxKind.CommaToken) {
-          const commaToken = declarations[componentIndex - 1];
+        const commaToken = declarations[componentIndex - 1];
 
-          source = [source.slice(0, commaToken.pos), source.slice(commaToken.end)].join('');
+        source = [source.slice(0, commaToken.pos), source.slice(commaToken.end)].join('');
       }
     }
   }
