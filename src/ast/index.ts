@@ -199,6 +199,19 @@ export function removeComponent(source: string, componentName: string) {
     }
   }
 
+  // ImportDeclaration
+
+  const importDeclaration = query([sourceFile])
+    .find((node) => {
+      return node.kind === ts.SyntaxKind.ImportDeclaration &&
+        node.getText().indexOf(componentName) !== -1;
+    })
+    .get();
+
+  if (importDeclaration) {
+    source = [source.slice(0, importDeclaration.pos), source.slice(importDeclaration.end)].join('');
+  }
+
   return source;
 }
 
