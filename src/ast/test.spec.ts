@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai'
 
-import { addComponent, removeComponent } from './index';
+import { addComponent, removeComponent, renameComponent } from './index';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -403,7 +403,35 @@ export class AppModule { }`;
     });
   });
 
-  describe('rename component', () => {
+  it('rename component', () => {
+    const file = `import { NgModule }      from '@angular/core';
+    import { TestComponent }  from './test.component';
+    import { AppComponent }  from './app.component';
 
+    @NgModule({
+      imports: [
+        TestModule
+      ],
+      declarations: [ TestComponent ],
+      bootstrap: [ AppComponent ]
+    })
+    export class AppModule { }`;
+
+          const fileExpected = `import { NgModule }      from '@angular/core';
+    import { TestComponent2 }  from './test.component';
+    import { AppComponent }  from './app.component';
+
+    @NgModule({
+      imports: [
+        TestModule
+      ],
+      declarations: [ TestComponent2 ],
+      bootstrap: [ AppComponent ]
+    })
+    export class AppModule { }`;
+
+    const resultText = renameComponent(file, 'TestComponent', 'TestComponent2');
+
+    expect(resultText).to.be.equal(fileExpected);
   });
 });

@@ -166,10 +166,6 @@ const query = (nodes: any[] = []) => {
 };
 
 export function removeComponent(source: string, componentName: string) {
-  const printer: ts.Printer = ts.createPrinter({
-    newLine: ts.NewLineKind.LineFeed
-  });
-
   const sourceFile: ts.SourceFile = ts.createSourceFile(
     '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
@@ -199,8 +195,6 @@ export function removeComponent(source: string, componentName: string) {
     }
   }
 
-  // ImportDeclaration
-
   const importDeclaration = query([sourceFile])
     .find((node) => {
       return node.kind === ts.SyntaxKind.ImportDeclaration &&
@@ -215,11 +209,31 @@ export function removeComponent(source: string, componentName: string) {
   return source;
 }
 
-export function addComponent(source: string, componentName: string, componentPath: string) {
-  const printer: ts.Printer = ts.createPrinter({
-    newLine: ts.NewLineKind.LineFeed
-  });
+export function renameComponent(source: string, oldComponentName: string, newComponentName: string) {
+  const getComponentNameUse = () => {
+    const sourceFile: ts.SourceFile = ts.createSourceFile(
+      '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
+    );
 
+    return query([sourceFile])
+    .find((node) => {
+
+      return node.getText() === oldComponentName &&
+        node.kind === ts.SyntaxKind.Identifier;
+    })
+    .get();
+  }
+
+  let use = getComponentNameUse();
+  while (use) {
+    source = [source.slice(0, use.pos), use.getFullText().replace(oldComponentName, newComponentName), source.slice(use.end)].join('');
+    use = getComponentNameUse();
+  }
+
+  return source;
+}
+
+export function addComponent(source: string, componentName: string, componentPath: string) {
   const sourceFile: ts.SourceFile = ts.createSourceFile(
     '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
   );
