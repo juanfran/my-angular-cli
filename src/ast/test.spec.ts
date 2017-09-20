@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai'
 
-import { addComponent, removeComponent, renameComponent } from './index';
+import { addComponent, removeComponent, renameComponent, setPathComponent } from './index';
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -431,6 +431,20 @@ export class AppModule { }`;
     export class AppModule { }`;
 
     const resultText = renameComponent(file, 'TestComponent', 'TestComponent2');
+
+    expect(resultText).to.be.equal(fileExpected);
+  });
+
+  it('change component path', () => {
+    const file = `import { NgModule }      from '@angular/core';
+    import { TestComponent }  from './test.component';
+    import { AppComponent }  from './app.component';`;
+
+          const fileExpected = `import { NgModule }      from '@angular/core';
+    import { TestComponent }  from './test2.component';
+    import { AppComponent }  from './app.component';`;
+
+    const resultText = setPathComponent(file, 'TestComponent', './test2.component');
 
     expect(resultText).to.be.equal(fileExpected);
   });

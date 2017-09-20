@@ -233,6 +233,44 @@ export function renameComponent(source: string, oldComponentName: string, newCom
   return source;
 }
 
+export function setPathComponent(source: string, componentName: string, newPath: string) {
+  const sourceFile: ts.SourceFile = ts.createSourceFile(
+    '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
+  );
+
+  const importComponent = query([sourceFile])
+    .find((node) => {
+      if (node.kind === ts.SyntaxKind.ImportDeclaration) {
+        const findId = query([node]).find((childNode) => {
+          return childNode.getText() === componentName &&
+            childNode.kind === ts.SyntaxKind.Identifier;
+        })
+        .get();
+
+        return !!findId;
+      }
+
+      return false;
+    })
+    .get();
+
+  if (importComponent) {
+    const importPath = query([importComponent])
+      .find((node) => {
+        return node.kind === ts.SyntaxKind.StringLiteral;
+      })
+      .get();
+
+    if (importPath) {
+      // todo fix quotes
+      // todo fix space
+      source = [source.slice(0, importPath.pos), ` '${newPath}'`, source.slice(importPath.end)].join('');
+    }
+  }
+
+  return source;
+};
+
 export function addComponent(source: string, componentName: string, componentPath: string) {
   const sourceFile: ts.SourceFile = ts.createSourceFile(
     '', source, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
