@@ -1,4 +1,4 @@
-import * as ts from "typescript";
+import * as ts from 'typescript';
 import * as path from 'path';
 import { readFileSync, writeFileSync } from "fs";
 import { ArrayLiteralExpression } from "typescript";
@@ -54,6 +54,22 @@ function findLast(node: ts.Node, fn: (node: ts.Node) => boolean) {
   }
 
   return lastChildren;
+}
+
+export function findModule(node: ts.Node, name: string) {
+  return query([node])
+  .find((node) => {
+    if (node.kind === ts.SyntaxKind.ClassDeclaration) {
+      return !!query([node]).find((childNode) => {
+        return childNode.getText() === name &&
+          childNode.kind === ts.SyntaxKind.Identifier;
+      })
+      .get();
+    }
+
+    return false;
+  })
+  .get();
 }
 
 function getDecorator(node: ts.Node, id: string): ts.Decorator | undefined {

@@ -1,7 +1,10 @@
+import * as ts from 'typescript';
 import * as glob from 'glob';
 import * as fs from 'fs';
+import * as path from 'path';
 
 import * as ast from '../ast';
+import { findModule } from '../ast';
 
 /*
 my-angular-cli add component
@@ -21,6 +24,10 @@ export interface AddComponentOptions {
   moduleName?: string;
 }
 
+/*
+  Todo:
+    modulePath could be xx.module.ts no the full path
+*/
 export function addComponent(options: AddComponentOptions) {
   options = {
     ...options
@@ -45,4 +52,28 @@ export function addComponent(options: AddComponentOptions) {
 
   fs.writeFileSync(options.modulePath, newFileContent);
 }
+
+
+
+
+/* TEST */
+
+const cwd = 'custom-cwd';
+glob(('**/*.ts'), {
+  cwd
+}, function(er, files) {
+  const find = files.find((file) => {
+    const fileContent = fs.readFileSync(path.join(cwd, file), 'utf8');
+    const sourceFile: ts.SourceFile = ts.createSourceFile(
+      '', fileContent, ts.ScriptTarget.ES2015, true, ts.ScriptKind.TS
+    );
+
+    return !!findModule(sourceFile, 'CmsModule');
+  });
+
+  console.log(find);
+})
+
+
+
 
