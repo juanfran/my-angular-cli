@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "glob": "^7.1.2",
+    "globby": "^6.1.0",
     "lodash": "^4.17.4",
     "write": "^1.0.3"
   }
