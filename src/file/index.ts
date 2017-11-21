@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { findModule } from '../ast';
 
 export async function findModuleFile(moduleName: string) {
-  const cwd = 'custom-cwd';
+  const cwd = process.cwd();
 
   const files = await globby(('**/*.ts'), {
     cwd

@@ -14,7 +14,7 @@ my-angular-cli add component
 
 my-angular-cli add component
   --componentName ExampleComponent
-  --moduleName src/example/example.module.ts
+  --moduleName TestModule
 */
 
 export interface AddComponentOptions {
@@ -24,17 +24,17 @@ export interface AddComponentOptions {
   moduleName?: string;
 }
 
-/*
-  Todo:
-    modulePath could be xx.module.ts no the full path
-*/
 export async function addComponent(options: AddComponentOptions) {
   options = {
     ...options
   };
 
-  if (!options.modulePath && options.moduleName) {
+  if (options.moduleName) {
     options.modulePath = await findModuleFile(options.moduleName);
+
+    if (!options.modulePath) {
+      throw new Error(`${options.moduleName} not found`);
+    }
   }
 
   if (!options.modulePath) {
@@ -55,13 +55,6 @@ export async function addComponent(options: AddComponentOptions) {
 
   fs.writeFileSync(options.modulePath, newFileContent);
 }
-
-addComponent({
-  componentName: 'xxxComponent',
-  componentPath: '../hola.ts',
-  moduleName: 'CmsModule'
-});
-
 
 
 
