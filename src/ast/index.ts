@@ -56,7 +56,7 @@ function findLast(node: ts.Node, fn: (node: ts.Node) => boolean) {
   return lastChildren;
 }
 
-export function findModule(node: ts.Node, name: string) {
+export function findClassByName(node: ts.Node, name: string) {
   return query([node])
   .find((node) => {
     if (node.kind === ts.SyntaxKind.ClassDeclaration) {

@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import * as ast from '../ast';
 import { findModule } from '../ast';
-import { findModuleFile } from '../file/index';
+import { findModuleFile, findComponentFile } from '../file';
 
 /*
 my-angular-cli add component
@@ -42,8 +42,11 @@ export async function addComponent(options: AddComponentOptions) {
   }
 
   if (!options.componentPath && options.componentName) {
-    // todo
-    options.componentPath = '';
+    options.componentPath = await findComponentFile(options.componentName);
+
+    if (!options.componentPath) {
+      throw new Error(`${options.componentName} not found`);
+    }
   }
 
   if (!options.componentPath || !options.componentName) {
